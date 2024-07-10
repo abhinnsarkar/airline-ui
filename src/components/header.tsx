@@ -15,7 +15,7 @@ export default function Header() {
         { name: "Flights", url: "/flights", icon: <AirplanemodeActiveIcon /> },
         {
             name: "Book a Flight",
-            url: "/flights-book",
+            url: "/flights-schedules-book",
             icon: <AirplaneTicketIcon />,
         },
     ];
