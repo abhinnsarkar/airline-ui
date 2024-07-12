@@ -37,7 +37,7 @@ interface FlightScheduleDTO {
 interface ApiResponse {
     data: FlightScheduleDTO[];
     messages: string[];
-    returnCode: number;
+    returnCode: string;
 }
 
 const Page = () => {
@@ -181,18 +181,30 @@ const Page = () => {
 
         console.log(requestData);
 
-        axios
-            .get<ApiResponse>("http://localhost:8080/flight-schedule", {
-                params: requestData,
-            })
-            .then((response) => {
-                console.log(response); // Log or process the response data
-                console.log(response.data); // Log or process the response data
-                console.log(response.data.data); // Log or process the response data
-            })
-            .catch((error) => {
-                console.error("Error fetching flights schedules:", error); // Handle errors
-            });
+        var reqUrl =
+            `http://localhost:8080/flight-schedule?` +
+            `departureLocation=${requestData.departureLocation}` +
+            `&destinationLocation=${requestData.destinationLocation}` +
+            `&departureMonth=${requestData.departureMonth}` +
+            `&departureDay=${requestData.departureDay}` +
+            `&departureYear=${requestData.departureYear}`;
+
+        // await axios
+        //     .get<ApiResponse>("http://localhost:8080/flight-schedule", {
+        //         params: requestData,
+        //     })
+        //     .then((response) => {
+        //         console.log(response); // Log or process the response data
+        //         console.log(response.data); // Log or process the response data
+        //         console.log(response.data.data); // Log or process the response data
+        //     })
+        //     .catch((error) => {
+        //         console.error("Error fetching flights schedules:", error); // Handle errors
+        //     });
+        console.log(reqUrl);
+        var info = await axios.get<ApiResponse>(reqUrl);
+
+        console.log(info.data.data);
     };
 
     return (
