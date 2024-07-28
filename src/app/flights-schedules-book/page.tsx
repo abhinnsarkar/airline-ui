@@ -8,7 +8,7 @@ import FormControl from "@mui/material/FormControl";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import TextField from "@mui/material/TextField";
 import FormHelperText from "@mui/material/FormHelperText";
-import { Button, Card } from "@mui/material";
+import { Alert, Button, Card } from "@mui/material";
 import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
@@ -168,6 +168,13 @@ const Page = () => {
     const [leaveFrom, setLeaveFrom] = useState("");
     const [destination, setDestination] = useState("");
 
+    const [fullFetchData, setFullFetchData] = useState<ApiResponse>();
+
+    const [flightSchedulesFetchError, setFlightSchedulesFetchError] =
+        useState("");
+
+    const [searchClicked, setSearchClicked] = useState<Boolean>(false);
+
     const handleLeaveFromChange = (
         event: React.ChangeEvent<HTMLInputElement>
     ) => {
@@ -223,17 +230,23 @@ const Page = () => {
             .then((response) => {
                 console.log(response); // Log or process the response data
                 console.log(response.data); // Log or process the response data
+                setFullFetchData(response.data);
                 console.log(response.data.data); // Log or process the response data
+
+                // console.log("api response: " + response);
 
                 retrievedFlightSchedulesData = response.data.data;
 
                 setRetrievedFlightSchedules(retrievedFlightSchedulesData);
             })
             .catch((error) => {
+                setFlightSchedulesFetchError(error); // handle
                 console.error("Error fetching flights schedules:", error); // Handle errors
             });
 
         console.log("info ", retrievedFlightSchedulesData);
+
+        setSearchClicked(true);
     };
 
     const [retrievedFlightSchedules, setRetrievedFlightSchedules] = useState<
@@ -401,85 +414,102 @@ const Page = () => {
                         flexDirection: "column",
                     }}
                 >
-                    {retrievedFlightSchedules.map((flightSchedule) => (
-                        <Card
-                            variant="outlined"
-                            key={flightSchedule.flightScheduleId}
-                        >
-                            <CardContent
-                                sx={{
-                                    alignContent: "center",
-                                    // backgroundColor: "violet",
-                                    width: "20%",
-                                    height: "100%",
-                                    float: "left",
-                                }}
-                            >
-                                <Typography
-                                    variant="h5"
-                                    // sx={{ fontSize: 20 }}
-                                    color="text.secondary"
-                                    gutterBottom
+                    {retrievedFlightSchedules.length === 0 && searchClicked ? (
+                        <Alert severity="error">
+                            {flightSchedulesFetchError
+                                ? flightSchedulesFetchError
+                                : fullFetchData?.messages?.[0]}
+                        </Alert>
+                    ) : (
+                        retrievedFlightSchedules.map(
+                            (flightSchedule: FlightScheduleDTO) => (
+                                <Card
+                                    variant="outlined"
+                                    key={flightSchedule.flightScheduleId}
                                 >
-                                    {flightSchedule.departureLocation} to{" "}
-                                    {flightSchedule.destinationLocation}
-                                </Typography>
-                            </CardContent>
+                                    <CardContent
+                                        sx={{
+                                            alignContent: "center",
+                                            // backgroundColor: "violet",
+                                            width: "20%",
+                                            height: "100%",
+                                            float: "left",
+                                        }}
+                                    >
+                                        <Typography
+                                            variant="h5"
+                                            // sx={{ fontSize: 20 }}
+                                            color="text.secondary"
+                                            gutterBottom
+                                        >
+                                            {flightSchedule.departureLocation}{" "}
+                                            to{" "}
+                                            {flightSchedule.destinationLocation}
+                                        </Typography>
+                                    </CardContent>
 
-                            <CardContent
-                                sx={{
-                                    width: "20%",
-                                    ml: "20%",
-                                    // backgroundColor: "blue",
-                                    height: "100%",
-                                    float: "left",
-                                }}
-                            >
-                                <Typography variant="h5" component="div">
-                                    Flight {flightSchedule.flightNumber}
-                                </Typography>
+                                    <CardContent
+                                        sx={{
+                                            width: "20%",
+                                            ml: "20%",
+                                            // backgroundColor: "blue",
+                                            height: "100%",
+                                            float: "left",
+                                        }}
+                                    >
+                                        <Typography
+                                            variant="h5"
+                                            component="div"
+                                        >
+                                            Flight {flightSchedule.flightNumber}
+                                        </Typography>
 
-                                <Typography
-                                    sx={{ fontSize: 12 }}
-                                    color="text.secondary"
-                                    gutterBottom
-                                >
-                                    {flightSchedule.originAirportCode} to{" "}
-                                    {flightSchedule.destinationAirportCode}
-                                </Typography>
+                                        <Typography
+                                            sx={{ fontSize: 12 }}
+                                            color="text.secondary"
+                                            gutterBottom
+                                        >
+                                            {flightSchedule.originAirportCode}{" "}
+                                            to{" "}
+                                            {
+                                                flightSchedule.destinationAirportCode
+                                            }
+                                        </Typography>
 
-                                <Typography
-                                    sx={{ mb: 1.5, fontSize: 10 }}
-                                    color="text.secondary"
-                                >
-                                    {flightSchedule.flightModelNameKey}
-                                </Typography>
-                            </CardContent>
+                                        <Typography
+                                            sx={{ mb: 1.5, fontSize: 10 }}
+                                            color="text.secondary"
+                                        >
+                                            {flightSchedule.flightModelNameKey}
+                                        </Typography>
+                                    </CardContent>
 
-                            <CardContent
-                                sx={{
-                                    alignContent: "center",
-                                    // backgroundColor: "green",
-                                    width: "20%",
-                                    height: "100%",
-                                    mt: "0%",
-                                    float: "right",
-                                }}
-                            >
-                                <Button
-                                    variant="contained"
-                                    sx={{ float: "right" }}
-                                    onClick={() =>
-                                        handleSeatsMenuOpen(
-                                            flightSchedule.flightScheduleId
-                                        )
-                                    }
-                                >
-                                    View Seats
-                                </Button>
-                            </CardContent>
-                        </Card>
-                    ))}
+                                    <CardContent
+                                        sx={{
+                                            alignContent: "center",
+                                            // backgroundColor: "green",
+                                            width: "20%",
+                                            height: "100%",
+                                            mt: "0%",
+                                            float: "right",
+                                        }}
+                                    >
+                                        <Button
+                                            variant="contained"
+                                            sx={{ float: "right" }}
+                                            onClick={() =>
+                                                handleSeatsMenuOpen(
+                                                    flightSchedule.flightScheduleId
+                                                )
+                                            }
+                                        >
+                                            View Seats
+                                        </Button>
+                                    </CardContent>
+                                </Card>
+                            )
+                        )
+                    )}
                 </Box>
             </Box>
             <Dialog
