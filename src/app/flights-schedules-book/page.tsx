@@ -1,5 +1,8 @@
 "use client";
 import axios from "axios";
+import ReactImageMagnify from "react-image-magnify";
+import CloseIcon from "@mui/icons-material/Close";
+import Zoom from "react-medium-image-zoom";
 import React, { useState, useEffect } from "react";
 import Box from "@mui/material/Box";
 import InputLabel from "@mui/material/InputLabel";
@@ -8,7 +11,7 @@ import FormControl from "@mui/material/FormControl";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import TextField from "@mui/material/TextField";
 import FormHelperText from "@mui/material/FormHelperText";
-import { Alert, Button, Card } from "@mui/material";
+import { Alert, Button, Card, DialogContent } from "@mui/material";
 import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
@@ -44,6 +47,7 @@ interface FlightScheduleDTO {
     departureLocation: string;
     destinationAirportCode: string;
     destinationLocation: string;
+    planeMapImgUrl: string;
     seats: SeatBookingAllocationInfo[];
 }
 
@@ -257,11 +261,17 @@ const Page = () => {
     const [selectedScheduleId, setSelectedScheduleId] = useState<string | null>(
         null
     );
+    const [currentPlaneMapImgUrl, setCurrentPlaneMapImgUrl] = useState<
+        string | null
+    >(null);
     const [seatsData, setSeatsData] = useState<{
         [key: string]: SeatBookingAllocationInfo[];
     }>({});
 
-    const handleSeatsMenuOpen = (flightScheduleId: string) => {
+    const handleSeatsMenuOpen = (
+        flightScheduleId: string,
+        planeMapImgUrl: string
+    ) => {
         setSelectedScheduleId(flightScheduleId);
         const selectedSeats =
             retrievedFlightSchedules.find(
@@ -269,6 +279,9 @@ const Page = () => {
             )?.seats ?? [];
         setSeatsData({ [flightScheduleId]: selectedSeats });
         setSeatsMenuOpen(true);
+
+        setCurrentPlaneMapImgUrl(planeMapImgUrl);
+        console.log("planeMapImgUrl: ", planeMapImgUrl);
     };
 
     const handleSeatsMenuClose = () => {
@@ -282,6 +295,12 @@ const Page = () => {
         setSelectedSeat(seatInfo);
         console.log("seatInfo: ", seatInfo);
     }
+
+    const [isZoomed, setIsZoomed] = useState(false);
+
+    const toggleZoom = () => {
+        setIsZoomed(!isZoomed);
+    };
 
     return (
         <>
@@ -499,7 +518,8 @@ const Page = () => {
                                             sx={{ float: "right" }}
                                             onClick={() =>
                                                 handleSeatsMenuOpen(
-                                                    flightSchedule.flightScheduleId
+                                                    flightSchedule.flightScheduleId,
+                                                    flightSchedule.planeMapImgUrl
                                                 )
                                             }
                                         >
@@ -512,40 +532,119 @@ const Page = () => {
                     )}
                 </Box>
             </Box>
+
             <Dialog
-                sx={{
-                    width: "50%",
-                    ml: "25%",
-                    // backgroundColor: "red",
-                    height: "50%",
-                    mt: "15%",
-                }}
+                fullScreen
                 onClose={handleSeatsMenuClose}
                 open={seatsMenuOpen}
+                sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    padding: 0,
+                    margin: 0,
+                    overflow: "hidden",
+                }}
             >
-                <List sx={{ mt: 0, width: "100%" }}>
-                    {selectedScheduleId &&
-                        seatsData[selectedScheduleId]?.map((seatInfo) => (
-                            <ListItem
-                                disableGutters
-                                key={seatInfo.seatAllocationId}
-                                sx={
-                                    {
-                                        // backgroundColor: "green",
-                                    }
-                                }
-                            >
-                                <ListItemButton
-                                    onClick={() => handleSeatClick(seatInfo)}
+                <DialogContent
+                    sx={{
+                        display: "flex",
+                        flexDirection: "row",
+                        padding: 0,
+                        margin: 0,
+                        height: "100%",
+                        overflow: "hidden",
+                    }}
+                >
+                    {/* Container for Seat List */}
+                    <div
+                        style={{
+                            flex: "1 1 50%", // Take up half of the dialog width
+                            display: "flex",
+                            flexDirection: "column",
+                            overflowY: "auto",
+                            borderRight: "1px solid #ddd", // Optional: border between the two sections
+                            height: "100%",
+                        }}
+                    >
+                        <List sx={{ width: "100%", height: "100%" }}>
+                            {selectedScheduleId &&
+                                seatsData[selectedScheduleId]?.map(
+                                    (seatInfo) => (
+                                        <ListItem
+                                            disableGutters
+                                            key={seatInfo.seatAllocationId}
+                                            sx={{
+                                                border: "1px solid black",
+                                            }}
+                                        >
+                                            <ListItemButton
+                                                onClick={() =>
+                                                    handleSeatClick(seatInfo)
+                                                }
+                                            >
+                                                <ListItemText
+                                                    primary={`Seat Number: ${seatInfo.seatNumber}`}
+                                                    secondary={`Class: ${seatInfo.seatClass}`}
+                                                />
+                                                <Typography
+                                                    color={
+                                                        seatInfo.available
+                                                            ? "green"
+                                                            : "red"
+                                                    }
+                                                >
+                                                    {seatInfo.available
+                                                        ? "AVAILABLE"
+                                                        : "UNAVAILABLE"}
+                                                </Typography>
+                                            </ListItemButton>
+                                        </ListItem>
+                                    )
+                                )}
+                        </List>
+                    </div>
+
+                    {/* Container for Image */}
+                    <div
+                        style={{
+                            flex: "1 1 50%", // Take up half of the dialog width
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            overflow: "auto",
+                            height: "100%",
+                        }}
+                    >
+                        {currentPlaneMapImgUrl && (
+                            <>
+                                <div
+                                    style={{
+                                        position: "relative",
+                                        width: "80%", // Adjust width as needed
+                                        height: "80%", // Adjust height as needed
+                                        overflowY: "scroll",
+                                    }}
                                 >
-                                    <ListItemText
-                                        primary={`Seat Number: ${seatInfo.seatNumber}`}
-                                        secondary={`Class: ${seatInfo.seatClass}`}
+                                    <img
+                                        src={currentPlaneMapImgUrl}
+                                        alt="Descriptive Alt Text"
+                                        style={{
+                                            // width: isZoomed ? "100vw" : "100%",
+                                            // height: isZoomed ? "100vh" : "",
+                                            cursor: "pointer",
+                                            overflowY: "scroll",
+                                        }}
+                                        // onClick={() => toggleZoom}
                                     />
-                                </ListItemButton>
-                            </ListItem>
-                        ))}
-                </List>
+                                </div>
+                                <Button onClick={handleSeatsMenuClose}>
+                                    Close
+                                    <CloseIcon />
+                                </Button>
+                            </>
+                        )}
+                    </div>
+                </DialogContent>
             </Dialog>
         </>
     );
