@@ -124,7 +124,7 @@ export default function Header() {
                             display: { xs: "none", sm: "block" },
                         }}
                     >
-                        MUI
+                        ABSKR AIRLINES
                     </Typography>
                     <Box sx={{ display: { xs: "none", sm: "block" } }}>
                         {pages.map((page) => (

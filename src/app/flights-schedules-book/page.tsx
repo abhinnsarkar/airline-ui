@@ -11,7 +11,7 @@ import FormControl from "@mui/material/FormControl";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import TextField from "@mui/material/TextField";
 import FormHelperText from "@mui/material/FormHelperText";
-import { Alert, Button, Card, DialogContent } from "@mui/material";
+import { Alert, Button, Card, DialogContent, FormLabel } from "@mui/material";
 import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
@@ -213,18 +213,6 @@ const Page = () => {
             `&departureDay=${requestData.departureDay}` +
             `&departureYear=${requestData.departureYear}`;
 
-        // await axios
-        //     .get<ApiResponse>("http://localhost:8080/flight-schedule", {
-        //         params: requestData,
-        //     })
-        //     .then((response) => {
-        //         console.log(response); // Log or process the response data
-        //         console.log(response.data); // Log or process the response data
-        //         console.log(response.data.data); // Log or process the response data
-        //     })
-        //     .catch((error) => {
-        //         console.error("Error fetching flights schedules:", error); // Handle errors
-        //     });
         console.log(reqUrl);
 
         var retrievedFlightSchedulesData;
@@ -232,12 +220,8 @@ const Page = () => {
         var info = await axios
             .get<ApiResponse>(reqUrl)
             .then((response) => {
-                console.log(response); // Log or process the response data
-                console.log(response.data); // Log or process the response data
                 setFullFetchData(response.data);
-                console.log(response.data.data); // Log or process the response data
-
-                // console.log("api response: " + response);
+                console.log(response.data.data);
 
                 retrievedFlightSchedulesData = response.data.data;
 
@@ -302,6 +286,17 @@ const Page = () => {
         setIsZoomed(!isZoomed);
     };
 
+    const bookSeat = (seatAllocationId: string) => {
+        console.log("Booking seat: ", seatAllocationId);
+        // var reqUrl =
+        //     `http://localhost:8080/flight-schedule?` +
+        //     `departureLocation=${requestData.departureLocation}` +
+        //     `&destinationLocation=${requestData.destinationLocation}` +
+        //     `&departureMonth=${requestData.departureMonth}` +
+        //     `&departureDay=${requestData.departureDay}` +
+        //     `&departureYear=${requestData.departureYear}`;
+    };
+
     return (
         <>
             <Box>
@@ -313,6 +308,11 @@ const Page = () => {
                             ml: "25%",
                         }}
                     >
+                        <FormLabel>
+                            <Typography>Register</Typography>
+                            <Typography>Create an account</Typography>
+                        </FormLabel>
+
                         <FormControl
                             sx={{
                                 width: "20%",
@@ -398,7 +398,7 @@ const Page = () => {
                             id="destination-input"
                             label="Destination"
                             variant="outlined"
-                            sx={{ width: "20%" }}
+                            sx={{ width: "20%", ml: "2%" }}
                             value={destination}
                             onChange={handleDestinationChange}
                         />
@@ -597,6 +597,22 @@ const Page = () => {
                                                         ? "AVAILABLE"
                                                         : "UNAVAILABLE"}
                                                 </Typography>
+
+                                                {seatInfo.available ? (
+                                                    <Button
+                                                        sx={{
+                                                            marginLeft: "2%",
+                                                        }}
+                                                        variant="contained"
+                                                        onClick={() =>
+                                                            bookSeat(
+                                                                seatInfo.seatAllocationId /*customer id*/
+                                                            )
+                                                        }
+                                                    >
+                                                        Book
+                                                    </Button>
+                                                ) : null}
                                             </ListItemButton>
                                         </ListItem>
                                     )
